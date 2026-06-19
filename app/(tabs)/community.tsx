@@ -5,8 +5,8 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { apiGet, apiPost, apiDelete } from '../../utils/api';
-import { COLORS, FONTS, SPACING, RADIUS, formatSchedule } from '../../constants/theme';
+import { apiGet, apiPost, apiDelete } from '@/src/utils/api';
+import { COLORS, FONTS, SPACING, RADIUS, formatSchedule } from '@/src/constants/theme';
 
 function CommunityCard({ item, onJoin, onPress }: any) {
   const [loading, setLoading] = useState(false);

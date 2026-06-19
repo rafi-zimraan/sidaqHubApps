@@ -10,7 +10,8 @@ import {
 import { Amiri_400Regular } from '@expo-google-fonts/amiri';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { AuthProvider } from '../context/AuthContext';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AuthProvider } from '@/src/context/AuthContext';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -38,6 +39,7 @@ export default function RootLayout() {
   // Previously returning null caused the app to hang if Google Fonts CDN was slow.
 
   return (
+    <SafeAreaProvider>
     <AuthProvider>
       <StatusBar style="auto" />
       <Stack screenOptions={{ headerShown: false }}>
@@ -52,5 +54,6 @@ export default function RootLayout() {
         <Stack.Screen name="edit-profile" options={{ presentation: 'modal' }} />
       </Stack>
     </AuthProvider>
+    </SafeAreaProvider>
   );
 }

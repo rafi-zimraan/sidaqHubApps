@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../../context/AuthContext';
-import { CURRENT_USER, MOCK_TOKEN } from '../../utils/mock';
-import { COLORS, FONTS } from '../../constants/theme';
+import { useAuth } from '@/src/context/AuthContext';
+import { CURRENT_USER, MOCK_TOKEN } from '@/src/utils/mock';
+import { COLORS, FONTS } from '@/src/constants/theme';
 
 export default function AuthCallback() {
   const router = useRouter();

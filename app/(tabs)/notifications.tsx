@@ -4,8 +4,8 @@ import {
   RefreshControl, ActivityIndicator, SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { apiGet, apiPut } from '../../utils/api';
-import { COLORS, FONTS, SPACING, RADIUS, formatTime } from '../../constants/theme';
+import { apiGet, apiPut } from '@/src/utils/api';
+import { COLORS, FONTS, SPACING, RADIUS, formatTime } from '@/src/constants/theme';
 
 const NOTIF_ICON: Record<string, string> = {
   follow: '👤',

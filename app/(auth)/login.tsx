@@ -13,9 +13,9 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../../context/AuthContext";
-import { CURRENT_USER, MOCK_TOKEN } from "../../utils/mock";
-import { COLORS, FONTS, SPACING, RADIUS } from "../../constants/theme";
+import { useAuth } from '@/src/context/AuthContext';
+import { CURRENT_USER, MOCK_TOKEN } from '@/src/utils/mock';
+import { COLORS, FONTS, SPACING, RADIUS } from '@/src/constants/theme';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");

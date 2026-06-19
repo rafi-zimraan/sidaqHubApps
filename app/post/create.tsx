@@ -5,9 +5,9 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { apiPost } from '../../utils/api';
-import { useAuth } from '../../context/AuthContext';
-import { COLORS, FONTS, SPACING, RADIUS } from '../../constants/theme';
+import { apiPost } from '@/src/utils/api';
+import { useAuth } from '@/src/context/AuthContext';
+import { COLORS, FONTS, SPACING, RADIUS } from '@/src/constants/theme';
 
 const POST_TYPES = [
   { id: 'text', label: 'Teks', icon: '✍️' },

@@ -5,9 +5,9 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../context/AuthContext';
-import { apiGet, apiPost, apiDelete } from '../../utils/api';
-import { COLORS, FONTS, SPACING, RADIUS, formatTime, formatSchedule } from '../../constants/theme';
+import { useAuth } from '@/src/context/AuthContext';
+import { apiGet, apiPost, apiDelete } from '@/src/utils/api';
+import { COLORS, FONTS, SPACING, RADIUS, formatTime, formatSchedule } from '@/src/constants/theme';
 
 // ---------- HELPERS ----------
 function getInitials(name?: string): string {

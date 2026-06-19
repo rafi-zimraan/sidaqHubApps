@@ -5,9 +5,9 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../context/AuthContext';
-import { apiGet, apiPost, apiDelete } from '../../utils/api';
-import { COLORS, FONTS, SPACING, RADIUS, getJuzBadge, getRoleLabel, formatTime } from '../../constants/theme';
+import { useAuth } from '@/src/context/AuthContext';
+import { apiGet, apiPost, apiDelete } from '@/src/utils/api';
+import { COLORS, FONTS, SPACING, RADIUS, getJuzBadge, getRoleLabel, formatTime } from '@/src/constants/theme';
 
 function Avatar({ uri, name, size = 44 }: any) {
   const [err, setErr] = useState(false);

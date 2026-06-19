@@ -2,7 +2,7 @@ import { Tabs, useRouter } from 'expo-router';
 import { BottomTabBar } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform, View, TouchableOpacity, StyleSheet } from 'react-native';
-import { COLORS, FONTS } from '../../constants/theme';
+import { COLORS, FONTS } from '@/src/constants/theme';
 
 function ComposeFAB() {
   const router = useRouter();

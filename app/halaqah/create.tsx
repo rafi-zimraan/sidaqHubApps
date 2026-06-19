@@ -6,8 +6,8 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { apiPost } from '../../utils/api';
-import { COLORS, FONTS, SPACING, RADIUS } from '../../constants/theme';
+import { apiPost } from '@/src/utils/api';
+import { COLORS, FONTS, SPACING, RADIUS } from '@/src/constants/theme';
 
 const PLATFORMS = ['Zoom', 'Google Meet', 'Offline'];
 

@@ -7,9 +7,9 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useAuth } from '../context/AuthContext';
-import { apiPut } from '../utils/api';
-import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
+import { useAuth } from '@/src/context/AuthContext';
+import { apiPut } from '@/src/utils/api';
+import { COLORS, FONTS, SPACING, RADIUS } from '@/src/constants/theme';
 
 const ROLES = [
   { id: 'santri', label: 'Santri Huffadz', icon: '📚' },
