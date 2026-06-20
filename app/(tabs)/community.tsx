@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, FlatList, StyleSheet, TouchableOpacity,
-  Image, RefreshControl, ActivityIndicator, SafeAreaView,
+  Image, RefreshControl, ActivityIndicator, Animated,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { apiGet, apiPost, apiDelete } from '@/src/utils/api';
 import { COLORS, FONTS, SPACING, RADIUS, formatSchedule } from '@/src/constants/theme';
@@ -101,6 +102,13 @@ export default function CommunityScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useFocusEffect(useCallback(() => {
+    fadeAnim.setValue(0);
+    Animated.timing(fadeAnim, { toValue: 1, duration: 220, useNativeDriver: true }).start();
+  }, [fadeAnim]));
 
   useEffect(() => { loadData(); }, []);
 
@@ -124,8 +132,8 @@ export default function CommunityScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View>
           <Text style={styles.headerTitle}>Komunitas & Halaqah</Text>
           <Text style={styles.headerSub}>Bergabung & belajar bersama</Text>
@@ -192,7 +200,7 @@ export default function CommunityScreen() {
           )}
         />
       )}
-    </SafeAreaView>
+    </Animated.View>
   );
 }
 

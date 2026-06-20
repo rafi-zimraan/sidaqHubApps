@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View, Text, FlatList, StyleSheet, TouchableOpacity,
-  ScrollView, RefreshControl, ActivityIndicator, SafeAreaView,
+  ScrollView, RefreshControl, ActivityIndicator, Animated,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/src/context/AuthContext';
 import { apiGet, apiPost, apiDelete } from '@/src/utils/api';
@@ -354,6 +355,13 @@ export default function HomeScreen() {
   const [filter, setFilter] = useState<string | null>(null);
   const { user } = useAuth();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useFocusEffect(useCallback(() => {
+    fadeAnim.setValue(0);
+    Animated.timing(fadeAnim, { toValue: 1, duration: 220, useNativeDriver: true }).start();
+  }, [fadeAnim]));
 
   useEffect(() => { loadData(); }, []);
 
@@ -403,9 +411,9 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
       {/* Top Bar */}
-      <View style={styles.topBar}>
+      <View style={[styles.topBar, { paddingTop: insets.top + 12 }]}>
         <View style={styles.brandRow}>
           <View style={styles.brandLogo}>
             <Ionicons name="add" size={14} color={COLORS.gold} />
@@ -496,7 +504,7 @@ export default function HomeScreen() {
         )}
         contentContainerStyle={{ paddingBottom: 80 }}
       />
-    </SafeAreaView>
+    </Animated.View>
   );
 }
 
@@ -506,7 +514,7 @@ const styles = StyleSheet.create({
 
   topBar: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: SPACING.md, paddingVertical: 12,
+    paddingHorizontal: SPACING.md, paddingBottom: 12,
     backgroundColor: COLORS.primary,
   },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },

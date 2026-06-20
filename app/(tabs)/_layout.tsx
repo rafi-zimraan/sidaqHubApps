@@ -1,7 +1,8 @@
 import { Tabs, useRouter } from 'expo-router';
 import { BottomTabBar } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { Platform, View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, FONTS } from '@/src/constants/theme';
 
 function ComposeFAB() {
@@ -30,6 +31,9 @@ function CustomTabBar(props: any) {
 }
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = 60 + insets.bottom;
+
   return (
     <Tabs
       tabBar={(props) => <CustomTabBar {...props} />}
@@ -41,8 +45,8 @@ export default function TabsLayout() {
           backgroundColor: COLORS.card,
           borderTopWidth: 1,
           borderTopColor: COLORS.border,
-          height: Platform.OS === 'ios' ? 85 : 68,
-          paddingBottom: Platform.OS === 'ios' ? 24 : 10,
+          height: tabBarHeight,
+          paddingBottom: insets.bottom + 6,
           paddingTop: 8,
         },
         tabBarLabelStyle: { fontFamily: FONTS.medium, fontSize: 11 },
