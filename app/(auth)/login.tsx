@@ -1,58 +1,65 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Alert,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useMutation } from '@apollo/client/react';
 import { useAuth } from '@/src/context/AuthContext';
-import { CURRENT_USER, MOCK_TOKEN } from '@/src/utils/mock';
+import { LOGIN_MUTATION } from '@/src/graphql/mutations';
 import { COLORS, FONTS, SPACING, RADIUS } from '@/src/constants/theme';
 
+interface LoginInput {
+  email: string;
+  password: string;
+}
+
 export default function LoginScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
 
-  const handleLogin = async () => {
+  const [doLogin, { loading }] = useMutation(LOGIN_MUTATION, {
+    onCompleted: async (data: any) => {
+      const { token, user } = data.login;
+      await login(user, token);
+      router.replace('/(tabs)/home');
+    },
+    onError: (err: any) => {
+      const message = err.graphQLErrors?.[0]?.message || err.message || 'Gagal masuk';
+      Alert.alert('Login Gagal', message);
+    },
+  });
+
+  const handleLogin = () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert("Perhatian", "Email dan kata sandi harus diisi");
+      Alert.alert('Perhatian', 'Email dan kata sandi harus diisi');
       return;
     }
-    // Tanpa backend: langsung masuk dengan user dummy.
-    await login(MOCK_TOKEN, CURRENT_USER as any);
-    router.replace("/(tabs)/home");
+    const input: LoginInput = {
+      email: email.trim().toLowerCase(),
+      password: password,
+    };
+    doLogin({ variables: { input } });
   };
 
   const comingSoon = () =>
-    Alert.alert(
-      "Segera Hadir",
-      "Fitur ini akan tersedia di update berikutnya, in syaa Allah 🌙",
-    );
+    Alert.alert('Segera Hadir', 'Fitur ini akan tersedia di update berikutnya, in syaa Allah 🌙');
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header (Teal Card with rounded bottom) */}
         <View style={styles.header}>
           <View style={styles.logoBadge}>
             <View style={styles.logoInner}>
@@ -64,7 +71,6 @@ export default function LoginScreen() {
           <Text style={styles.subtitle}>Masuk ke akun Huffadz kamu</Text>
         </View>
 
-        {/* Form */}
         <View style={styles.form}>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Alamat Email</Text>
@@ -99,7 +105,7 @@ export default function LoginScreen() {
                 testID="toggle-password-visibility"
               >
                 <Ionicons
-                  name={showPass ? "eye-off-outline" : "eye-outline"}
+                  name={showPass ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
                   color={COLORS.textSecondary}
                 />
@@ -107,7 +113,6 @@ export default function LoginScreen() {
             </View>
           </View>
 
-          {/* Remember + Forgot */}
           <View style={styles.optionsRow}>
             <TouchableOpacity
               testID="remember-me-checkbox"
@@ -115,25 +120,16 @@ export default function LoginScreen() {
               onPress={() => setRememberMe(!rememberMe)}
               activeOpacity={0.7}
             >
-              <View
-                style={[styles.checkbox, rememberMe && styles.checkboxActive]}
-              >
-                {rememberMe && (
-                  <Ionicons name="checkmark" size={12} color="#fff" />
-                )}
+              <View style={[styles.checkbox, rememberMe && styles.checkboxActive]}>
+                {rememberMe && <Ionicons name="checkmark" size={12} color="#fff" />}
               </View>
               <Text style={styles.optionText}>Ingat saya</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={comingSoon}
-              testID="forgot-password-link"
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity onPress={comingSoon} testID="forgot-password-link" activeOpacity={0.7}>
               <Text style={styles.forgotText}>Lupa kata sandi?</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Submit */}
           <TouchableOpacity
             testID="login-submit-button"
             style={[styles.primaryBtn, loading && styles.btnDisabled]}
@@ -148,14 +144,12 @@ export default function LoginScreen() {
             )}
           </TouchableOpacity>
 
-          {/* Divider */}
           <View style={styles.divider}>
             <View style={styles.dividerLine} />
             <Text style={styles.dividerText}>atau masuk dengan</Text>
             <View style={styles.dividerLine} />
           </View>
 
-          {/* Social buttons */}
           <View style={styles.socialRow}>
             <TouchableOpacity
               testID="login-google-button"
@@ -178,22 +172,16 @@ export default function LoginScreen() {
           </View>
         </View>
 
-        {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>Belum punya akun? </Text>
           <TouchableOpacity
             testID="go-to-register"
-            onPress={() => router.push("/(auth)/register")}
+            onPress={() => router.push('/(auth)/register')}
             activeOpacity={0.7}
           >
             <View style={styles.footerLinkRow}>
               <Text style={styles.footerLink}>Daftar sekarang</Text>
-              <Ionicons
-                name="create-outline"
-                size={14}
-                color={COLORS.gold}
-                style={{ marginLeft: 4 }}
-              />
+              <Ionicons name="create-outline" size={14} color={COLORS.gold} style={{ marginLeft: 4 }} />
             </View>
           </TouchableOpacity>
         </View>
@@ -203,172 +191,76 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   scroll: { flexGrow: 1, paddingBottom: SPACING.xl },
   header: {
     backgroundColor: COLORS.primary,
     paddingTop: 56,
     paddingBottom: 48,
-    alignItems: "center",
+    alignItems: 'center',
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
   },
   logoBadge: {
-    width: 76,
-    height: 76,
-    borderRadius: 22,
-    backgroundColor: "rgba(255,255,255,0.10)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.15)",
-    alignItems: "center",
-    justifyContent: "center",
+    width: 76, height: 76, borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center', justifyContent: 'center',
     marginBottom: SPACING.md,
   },
   logoInner: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: COLORS.gold,
-    alignItems: "center",
-    justifyContent: "center",
+    width: 48, height: 48, borderRadius: 14,
+    borderWidth: 1.5, borderColor: COLORS.gold,
+    alignItems: 'center', justifyContent: 'center',
   },
-  bismillah: {
-    fontFamily: FONTS.arabic,
-    fontSize: 22,
-    color: COLORS.gold,
-    marginBottom: 8,
-    letterSpacing: 1,
-  },
-  appName: {
-    fontFamily: FONTS.bold,
-    fontSize: 30,
-    color: "#fff",
-    letterSpacing: -0.5,
-    marginBottom: 4,
-    width: "38%",
-  },
-  subtitle: {
-    fontFamily: FONTS.regular,
-    fontSize: 14,
-    color: "rgba(255,255,255,0.85)",
-  },
+  bismillah: { fontFamily: FONTS.arabic, fontSize: 22, color: COLORS.gold, marginBottom: 8, letterSpacing: 1 },
+  appName: { fontFamily: FONTS.bold, fontSize: 30, color: '#fff', letterSpacing: -0.5, marginBottom: 4 },
+  subtitle: { fontFamily: FONTS.regular, fontSize: 14, color: 'rgba(255,255,255,0.85)' },
   form: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.xl },
   inputGroup: { marginBottom: SPACING.md },
-  label: {
-    fontFamily: FONTS.semiBold,
-    fontSize: 14,
-    color: COLORS.text,
-    marginBottom: 8,
-  },
+  label: { fontFamily: FONTS.semiBold, fontSize: 14, color: COLORS.text, marginBottom: 8 },
   input: {
-    backgroundColor: "#FAFAFA",
-    borderWidth: 1,
-    borderColor: "#EEEEEE",
-    borderRadius: RADIUS.md,
-    paddingHorizontal: SPACING.md,
-    height: 52,
-    fontFamily: FONTS.regular,
-    fontSize: 14,
-    color: COLORS.text,
+    backgroundColor: '#FAFAFA', borderWidth: 1, borderColor: '#EEEEEE',
+    borderRadius: RADIUS.md, paddingHorizontal: SPACING.md,
+    height: 52, fontFamily: FONTS.regular, fontSize: 14, color: COLORS.text,
   },
-  passwordRow: { position: "relative", justifyContent: "center" },
-  eyeBtn: { position: "absolute", right: 14, padding: 4 },
+  passwordRow: { position: 'relative', justifyContent: 'center' },
+  eyeBtn: { position: 'absolute', right: 14, padding: 4 },
   optionsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 4,
-    marginBottom: SPACING.md,
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    marginTop: 4, marginBottom: SPACING.md,
   },
-  checkboxRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingVertical: 4,
-  },
+  checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
   checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: "#CCCCCC",
-    alignItems: "center",
-    justifyContent: "center",
+    width: 18, height: 18, borderRadius: 4, borderWidth: 1.5, borderColor: '#CCCCCC',
+    alignItems: 'center', justifyContent: 'center',
   },
-  checkboxActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
+  checkboxActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   optionText: { fontFamily: FONTS.medium, fontSize: 13, color: COLORS.text },
-  forgotText: {
-    fontFamily: FONTS.semiBold,
-    fontSize: 13,
-    color: COLORS.primary,
-  },
+  forgotText: { fontFamily: FONTS.semiBold, fontSize: 13, color: COLORS.primary },
   primaryBtn: {
-    backgroundColor: COLORS.primary,
-    height: 54,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: SPACING.sm,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    backgroundColor: COLORS.primary, height: 54, borderRadius: 14,
+    alignItems: 'center', justifyContent: 'center', marginTop: SPACING.sm,
+    shadowColor: COLORS.primary, shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18, shadowRadius: 12, elevation: 4,
   },
   btnDisabled: { opacity: 0.6 },
-  primaryBtnText: {
-    fontFamily: FONTS.bold,
-    fontSize: 16,
-    color: "#fff",
-    letterSpacing: 0.3,
-    width: "17%",
-  },
-  divider: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: SPACING.lg,
-  },
-  dividerLine: { flex: 1, height: 1, backgroundColor: "#EEEEEE" },
-  dividerText: {
-    fontFamily: FONTS.regular,
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginHorizontal: SPACING.sm,
-  },
-  socialRow: { flexDirection: "row", gap: SPACING.sm },
+  primaryBtnText: { fontFamily: FONTS.bold, fontSize: 16, color: '#fff', letterSpacing: 0.3 },
+  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: SPACING.lg },
+  dividerLine: { flex: 1, height: 1, backgroundColor: '#EEEEEE' },
+  dividerText: { fontFamily: FONTS.regular, fontSize: 12, color: COLORS.textSecondary, marginHorizontal: SPACING.sm },
+  socialRow: { flexDirection: 'row', gap: SPACING.sm },
   socialBtn: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 52,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: "#EEEEEE",
-    backgroundColor: "#fff",
-    gap: 8,
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    height: 52, borderRadius: RADIUS.md, borderWidth: 1, borderColor: '#EEEEEE',
+    backgroundColor: '#fff', gap: 8,
   },
-  socialBtnText: {
-    fontFamily: FONTS.semiBold,
-    fontSize: 14,
-    color: COLORS.text,
-  },
+  socialBtnText: { fontFamily: FONTS.semiBold, fontSize: 14, color: COLORS.text },
   footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.md,
+    flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
+    paddingTop: SPACING.xl, paddingBottom: SPACING.md,
   },
-  footerText: {
-    fontFamily: FONTS.regular,
-    fontSize: 14,
-    color: COLORS.textSecondary,
-  },
-  footerLinkRow: { flexDirection: "row", alignItems: "center" },
+  footerText: { fontFamily: FONTS.regular, fontSize: 14, color: COLORS.textSecondary },
+  footerLinkRow: { flexDirection: 'row', alignItems: 'center' },
   footerLink: { fontFamily: FONTS.bold, fontSize: 14, color: COLORS.gold },
 });

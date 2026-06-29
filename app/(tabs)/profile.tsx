@@ -100,6 +100,12 @@ function AnimSection({ children, delay = 0 }: { children: React.ReactNode; delay
 }
 
 // ---------- MAIN SCREEN ----------
+const ROLES = [
+  { id: 'santri', label: 'Santri Huffadz' },
+  { id: 'ustadz', label: 'Ustadz/Musyrif' },
+  { id: 'huffadz', label: 'Huffadz Dewasa' },
+];
+
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const router = useRouter();
@@ -132,30 +138,16 @@ export default function ProfileScreen() {
 
   if (!user) return null;
 
-  const juzCount = user.juz_count || 0;
+  const hp = user.huffadzProfile;
+  const juzCount = hp?.juzProgress || hp?.verifiedJuz || (user as any).juz_count || 0;
   const isKhatam = juzCount >= 30;
 
-  const skills = [
-    { label: 'Tahfidz Quran', highlight: true },
-    { label: 'Tilawah Murattal', highlight: false },
-    { label: 'Ilmu Tajwid', highlight: false },
-    { label: 'Metode Talaqqi', highlight: false },
-    { label: 'Bahasa Arab', highlight: false },
-    { label: 'Imamah Shalat', highlight: true },
-    { label: 'Public Speaking', highlight: false },
-    { label: 'Manajemen Kelas', highlight: false },
-  ];
-
-  const certs = [
-    { title: 'Sanad Quran Riwayat Hafs', org: 'Lembaga Tahfidz Nasional', year: '2023', color: COLORS.primary },
-    { title: 'Juara 1 MTQ Provinsi', org: 'Kemenag Jawa Barat', year: '2022', color: '#2E7D8C' },
-    { title: 'Pelatihan TPQ Nasional', org: 'Kemenag RI', year: '2021', color: COLORS.gold },
-  ];
-
-  const experiences = [
-    { role: 'Pengajar Tahfidz Senior', place: 'Pesantren Al-Hikmah, Bandung', period: 'Jan 2022 – Sekarang · 3 thn' },
-    { role: 'Imam Rawatib & Pembina TPQ', place: 'Masjid Al-Ikhlas, Bandung', period: 'Agu 2019 – Des 2021 · 2 thn' },
-  ];
+  const skillsList = hp?.skillsList?.length ? hp.skillsList : ['Tahfidz Quran', 'Tilawah', 'Tajwid'];
+  const interests = hp?.interests || [];
+  const hobbies = hp?.hobbies || [];
+  const experiences = hp?.experiences?.length ? hp.experiences : [];
+  const certs = hp?.certificationsList?.length ? hp.certificationsList : [];
+  const genderLabel = (user as any).gender === 'L' ? 'Laki-laki' : (user as any).gender === 'P' ? 'Perempuan' : null;
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
@@ -183,6 +175,9 @@ export default function ProfileScreen() {
           <View style={styles.coverActions}>
             <TouchableOpacity style={styles.coverIconBtn} onPress={handleLogout} testID="logout-btn" activeOpacity={0.7}>
               <Ionicons name="log-out-outline" size={19} color="rgba(255,255,255,0.9)" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.coverIconBtn} onPress={() => router.push('/app-health')} activeOpacity={0.7}>
+              <Ionicons name="heart-circle-outline" size={19} color="rgba(255,255,255,0.9)" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.coverIconBtn} activeOpacity={0.7}>
               <Ionicons name="ellipsis-horizontal" size={19} color="rgba(255,255,255,0.9)" />
@@ -220,7 +215,7 @@ export default function ProfileScreen() {
 
             <Text style={styles.profileName}>{user.name}</Text>
             <Text style={styles.profileUsername}>
-              @{user.name.toLowerCase().replace(/\s+/g, '').slice(0, 14)}.huffadz
+              @{user.username || user.name.toLowerCase().replace(/\s+/g, '').slice(0, 14)}.huffadz
             </Text>
 
             {/* Badge pill */}
@@ -232,18 +227,25 @@ export default function ProfileScreen() {
               </View>
             </View>
 
-            {user.bio ? <Text style={styles.bio}>{user.bio}</Text> : null}
+            {user.bio || hp?.bio ? <Text style={styles.bio}>{user.bio || hp?.bio}</Text> : null}
 
             {/* Meta row */}
             <View style={styles.metaRow}>
               <View style={styles.metaItem}>
                 <Ionicons name="location-outline" size={12} color={COLORS.textSecondary} />
-                <Text style={styles.metaText}>{user.city || 'Bandung'}, Jawa Barat</Text>
+                <Text style={styles.metaText}>{user.city_name || user.city?.name || hp?.city || 'Indonesia'}</Text>
               </View>
               <View style={styles.metaDot} />
-              <Text style={styles.metaText}>Pesantren Al-Hikmah</Text>
-              <View style={styles.metaDot} />
-              <Text style={styles.metaText}>Bergabung Mar 2024</Text>
+              <View style={styles.metaItem}>
+                <Ionicons name="call-outline" size={12} color={COLORS.textSecondary} />
+                <Text style={styles.metaText}>{user.phone || '-'}</Text>
+              </View>
+              {genderLabel ? (
+                <>
+                  <View style={styles.metaDot} />
+                  <Text style={styles.metaText}>{genderLabel}</Text>
+                </>
+              ) : null}
             </View>
 
             {/* Stats */}
@@ -262,6 +264,50 @@ export default function ProfileScreen() {
                   </TouchableOpacity>
                 </React.Fragment>
               ))}
+            </View>
+          </View>
+        </AnimSection>
+
+        {/* ── INFORMASI AKUN ── */}
+        <AnimSection delay={100}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>INFORMASI AKUN</Text>
+            <View style={styles.infoList}>
+              <View style={styles.infoRow}>
+                <Ionicons name="mail-outline" size={15} color={COLORS.textSecondary} />
+                <Text style={styles.infoLabel}>Email</Text>
+                <Text style={styles.infoValue}>{user.email || '-'}</Text>
+              </View>
+              <View style={styles.infoDivider} />
+              <View style={styles.infoRow}>
+                <Ionicons name="call-outline" size={15} color={COLORS.textSecondary} />
+                <Text style={styles.infoLabel}>Telepon</Text>
+                <Text style={styles.infoValue}>{user.phone || '-'}</Text>
+              </View>
+              <View style={styles.infoDivider} />
+              <View style={styles.infoRow}>
+                <Ionicons name="calendar-outline" size={15} color={COLORS.textSecondary} />
+                <Text style={styles.infoLabel}>Tanggal Lahir</Text>
+                <Text style={styles.infoValue}>{(user as any).birthday || '-'}</Text>
+              </View>
+              <View style={styles.infoDivider} />
+              <View style={styles.infoRow}>
+                <Ionicons name="person-outline" size={15} color={COLORS.textSecondary} />
+                <Text style={styles.infoLabel}>Jenis Kelamin</Text>
+                <Text style={styles.infoValue}>{genderLabel || '-'}</Text>
+              </View>
+              <View style={styles.infoDivider} />
+              <View style={styles.infoRow}>
+                <Ionicons name="shield-checkmark-outline" size={15} color={COLORS.textSecondary} />
+                <Text style={styles.infoLabel}>Peran</Text>
+                <Text style={styles.infoValue}>{user.role ? ROLES.find((r: any) => r.id === user.role)?.label || user.role : '-'}</Text>
+              </View>
+              <View style={styles.infoDivider} />
+              <View style={styles.infoRow}>
+                <Ionicons name="location-outline" size={15} color={COLORS.textSecondary} />
+                <Text style={styles.infoLabel}>Lokasi</Text>
+                <Text style={styles.infoValue}>{user.city_name || user.city?.name || hp?.city || '-'}</Text>
+              </View>
             </View>
           </View>
         </AnimSection>
@@ -304,43 +350,74 @@ export default function ProfileScreen() {
         </AnimSection>
 
         {/* ── SERTIFIKASI & PENCAPAIAN ── */}
-        <AnimSection delay={220}>
-          <View style={styles.section}>
-            <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>SERTIFIKASI & PENCAPAIAN</Text>
-              <TouchableOpacity activeOpacity={0.7}>
-                <Text style={styles.seeAll}>Lihat Semua</Text>
-              </TouchableOpacity>
+        {certs.length > 0 ? (
+          <AnimSection delay={220}>
+            <View style={styles.section}>
+              <View style={styles.sectionHeaderRow}>
+                <Text style={styles.sectionTitle}>SERTIFIKASI & PENCAPAIAN</Text>
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.certList}>
+                {certs.map((c: any, i: number) => (
+                  <CertCard key={i} title={c.title || c.name || ''} org={c.organization || c.org || ''} year={c.year || c.date || ''} color={c.color || COLORS.primary} />
+                ))}
+              </ScrollView>
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.certList}>
-              {certs.map((c, i) => <CertCard key={i} {...c} />)}
-            </ScrollView>
-          </View>
-        </AnimSection>
+          </AnimSection>
+        ) : null}
 
         {/* ── KEAHLIAN & BAKAT ── */}
         <AnimSection delay={300}>
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>KEAHLIAN & BAKAT</Text>
-            <View style={styles.skillsWrap}>
-              {skills.map((s) => (
-                <View key={s.label} style={[styles.skillChip, s.highlight && styles.skillChipHL]}>
-                  <Text style={[styles.skillText, s.highlight && styles.skillTextHL]}>{s.label}</Text>
+            {skillsList.length > 0 ? (
+              <View style={styles.skillsWrap}>
+                {skillsList.map((s: string) => (
+                  <View key={s} style={styles.skillChip}>
+                    <Text style={styles.skillText}>{s}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : null}
+            {interests.length > 0 ? (
+              <>
+                <Text style={[styles.sectionTitle, { marginTop: SPACING.sm }]}>MINAT</Text>
+                <View style={styles.skillsWrap}>
+                  {interests.map((i: string) => (
+                    <View key={i} style={[styles.skillChip, { backgroundColor: '#FFF8E1', borderColor: COLORS.gold }]}>
+                      <Text style={[styles.skillText, { color: COLORS.gold }]}>{i}</Text>
+                    </View>
+                  ))}
                 </View>
-              ))}
-            </View>
+              </>
+            ) : null}
+            {hobbies.length > 0 ? (
+              <>
+                <Text style={[styles.sectionTitle, { marginTop: SPACING.sm }]}>HOBI</Text>
+                <View style={styles.skillsWrap}>
+                  {hobbies.map((h: string) => (
+                    <View key={h} style={styles.skillChip}>
+                      <Text style={styles.skillText}>{h}</Text>
+                    </View>
+                  ))}
+                </View>
+              </>
+            ) : null}
           </View>
         </AnimSection>
 
         {/* ── PENGALAMAN ── */}
-        <AnimSection delay={380}>
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>PENGALAMAN</Text>
-            <View style={styles.expList}>
-              {experiences.map((e, i) => <ExpItem key={i} {...e} />)}
+        {experiences.length > 0 ? (
+          <AnimSection delay={380}>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>PENGALAMAN</Text>
+              <View style={styles.expList}>
+                {experiences.map((e: any, i: number) => (
+                  <ExpItem key={i} role={e.role || e.title} place={e.place || e.organization || ''} period={e.period || e.year || ''} />
+                ))}
+              </View>
             </View>
-          </View>
-        </AnimSection>
+          </AnimSection>
+        ) : null}
 
         <View style={{ height: SPACING.xl * 2 }} />
       </ScrollView>
@@ -552,6 +629,13 @@ const styles = StyleSheet.create({
   certTitle: { fontFamily: FONTS.semiBold, fontSize: 12, color: COLORS.text, marginBottom: 4 },
   certOrg: { fontFamily: FONTS.regular, fontSize: 11, color: COLORS.textSecondary, marginBottom: 2 },
   certYear: { fontFamily: FONTS.semiBold, fontSize: 11, color: COLORS.primary },
+
+  // INFO LIST
+  infoList: { gap: 0 },
+  infoRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 10 },
+  infoLabel: { fontFamily: FONTS.medium, fontSize: 13, color: COLORS.textSecondary, width: 100 },
+  infoValue: { fontFamily: FONTS.semiBold, fontSize: 13, color: COLORS.text, flex: 1 },
+  infoDivider: { height: 1, backgroundColor: COLORS.border },
 
   // SKILLS
   skillsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },

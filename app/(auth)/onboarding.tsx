@@ -5,8 +5,9 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useMutation } from '@apollo/client/react';
 import { useAuth } from '@/src/context/AuthContext';
-import { apiPut } from '@/src/utils/api';
+import { UPDATE_PROFILE_MUTATION } from '@/src/graphql/mutations';
 import { COLORS, FONTS, SPACING, RADIUS } from '@/src/constants/theme';
 
 const ROLES = [
@@ -34,6 +35,8 @@ export default function OnboardingScreen() {
     );
   };
 
+  const [updateProfile] = useMutation(UPDATE_PROFILE_MUTATION);
+
   const handleFinish = async () => {
     if (!role) {
       Alert.alert('Perhatian', 'Pilih peranmu terlebih dahulu');
@@ -41,16 +44,21 @@ export default function OnboardingScreen() {
     }
     setLoading(true);
     try {
-      const updated = await apiPut('/api/users/me', {
-        role,
-        juz_count: juzCount,
-        interests,
-        profile_completed: true,
-      });
-      updateUser(updated);
+      const { data } = await updateProfile({
+        variables: {
+          input: {
+            role,
+            juzProgress: juzCount,
+            interests,
+          },
+        },
+      }) as any;
+      if (data?.updateProfile) {
+        updateUser({ ...data.updateProfile, profile_completed: true } as any);
+      }
       router.replace('/(tabs)/home');
     } catch (err: any) {
-      Alert.alert('Error', err.message);
+      Alert.alert('Error', err.graphQLErrors?.[0]?.message || err.message);
     } finally {
       setLoading(false);
     }

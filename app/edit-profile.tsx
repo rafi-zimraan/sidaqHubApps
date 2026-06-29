@@ -7,8 +7,9 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { useMutation } from '@apollo/client/react';
 import { useAuth } from '@/src/context/AuthContext';
-import { apiPut } from '@/src/utils/api';
+import { UPDATE_PROFILE_MUTATION } from '@/src/graphql/mutations';
 import { COLORS, FONTS, SPACING, RADIUS } from '@/src/constants/theme';
 
 const ROLES = [
@@ -17,17 +18,30 @@ const ROLES = [
   { id: 'huffadz', label: 'Huffadz Dewasa', icon: '🌟' },
 ];
 
+const GENDERS = [
+  { id: 'L', label: 'Laki-laki' },
+  { id: 'P', label: 'Perempuan' },
+];
+
 const INTERESTS = ['Tahfidz', 'Tajwid', 'Tafsir', 'Tilawah', 'Qiraah', 'Fiqh', 'Hadits', 'Bahasa Arab'];
 
 export default function EditProfileScreen() {
   const { user, updateUser } = useAuth();
   const router = useRouter();
+  const hp = user?.huffadzProfile;
   const [name, setName] = useState(user?.name || '');
-  const [city, setCity] = useState(user?.city || '');
-  const [bio, setBio] = useState(user?.bio || '');
-  const [juzCount, setJuzCount] = useState(user?.juz_count?.toString() || '0');
+  const [username, setUsername] = useState((user as any)?.username || '');
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [birthday, setBirthday] = useState((user as any)?.birthday || '');
+  const [gender, setGender] = useState(hp?.gender || '');
+  const [city, setCity] = useState(user?.city_name || user?.city?.name || hp?.city || '');
+  const [province, setProvince] = useState(hp?.province || '');
+  const [bio, setBio] = useState(user?.bio || hp?.bio || '');
+  const [juzCount, setJuzCount] = useState(user?.juz_count?.toString() || hp?.juzProgress?.toString() || '0');
   const [role, setRole] = useState(user?.role || 'santri');
-  const [interests, setInterests] = useState<string[]>(user?.interests || []);
+  const [interests, setInterests] = useState<string[]>(user?.interests || hp?.interests || []);
+  const [hobbies, setHobbies] = useState((hp?.hobbies || []).join(', '));
+  const [skills, setSkills] = useState((hp?.skillsList || []).join(', '));
   const [avatarUri, setAvatarUri] = useState(user?.avatar_url || '');
   const [loading, setLoading] = useState(false);
 
@@ -56,6 +70,8 @@ export default function EditProfileScreen() {
     }
   };
 
+  const [updateProfile] = useMutation(UPDATE_PROFILE_MUTATION);
+
   const handleSave = async () => {
     if (!name.trim()) {
       Alert.alert('Perhatian', 'Nama tidak boleh kosong');
@@ -63,21 +79,33 @@ export default function EditProfileScreen() {
     }
     setLoading(true);
     try {
-      const updated = await apiPut('/api/users/me', {
-        name: name.trim(),
-        city: city.trim(),
-        bio: bio.trim(),
-        juz_count: parseInt(juzCount) || 0,
-        role,
-        interests,
-        avatar_url: avatarUri,
-      });
-      updateUser(updated);
+      const { data } = await updateProfile({
+        variables: {
+          input: {
+            name: name.trim(),
+            username: username.trim() || undefined,
+            phone: phone.trim() || undefined,
+            birthday: birthday.trim() || undefined,
+            gender: gender || undefined,
+            role,
+            city: city.trim() || undefined,
+            province: province.trim() || undefined,
+            interests,
+            hobbies: hobbies.trim() ? hobbies.split(',').map((h: string) => h.trim()) : undefined,
+            skillsList: skills.trim() ? skills.split(',').map((s: string) => s.trim()) : undefined,
+            juzProgress: parseInt(juzCount) || 0,
+            bio: bio.trim(),
+          },
+        },
+      }) as any;
+      if (data?.updateProfile) {
+        updateUser(data.updateProfile);
+      }
       Alert.alert('Berhasil!', 'Profil berhasil diperbarui', [
         { text: 'OK', onPress: () => router.back() },
       ]);
     } catch (err: any) {
-      Alert.alert('Error', err.message);
+      Alert.alert('Error', err.graphQLErrors?.[0]?.message || err.message);
     }
     setLoading(false);
   };
@@ -122,7 +150,11 @@ export default function EditProfileScreen() {
 
           {[
             { label: 'Nama Lengkap', value: name, setter: setName, testId: 'edit-name-input' },
-            { label: 'Kota', value: city, setter: setCity, testId: 'edit-city-input', placeholder: 'Jakarta' },
+            { label: 'Username', value: username, setter: setUsername, testId: 'edit-username-input', placeholder: 'ahmad_fauzi' },
+            { label: 'No. Telepon', value: phone, setter: setPhone, testId: 'edit-phone-input', placeholder: '08123456789', keyboard: 'phone-pad' as const },
+            { label: 'Tanggal Lahir', value: birthday, setter: setBirthday, testId: 'edit-birthday-input', placeholder: 'YYYY-MM-DD' },
+            { label: 'Kota', value: city, setter: setCity, testId: 'edit-city-input', placeholder: 'Bandung' },
+            { label: 'Provinsi', value: province, setter: setProvince, testId: 'edit-province-input', placeholder: 'Jawa Barat' },
           ].map((f) => (
             <View key={f.testId} style={styles.field}>
               <Text style={styles.label}>{f.label}</Text>
@@ -133,6 +165,8 @@ export default function EditProfileScreen() {
                 onChangeText={f.setter}
                 placeholder={f.placeholder || f.label}
                 placeholderTextColor={COLORS.textSecondary}
+                keyboardType={(f as any).keyboard || 'default'}
+                autoCapitalize="none"
               />
             </View>
           ))}
@@ -148,6 +182,18 @@ export default function EditProfileScreen() {
               placeholderTextColor={COLORS.textSecondary}
               multiline
             />
+          </View>
+
+          {/* Gender */}
+          <View style={styles.field}>
+            <Text style={styles.label}>Jenis Kelamin</Text>
+            <View style={styles.genderRow}>
+              {GENDERS.map((g) => (
+                <TouchableOpacity key={g.id} style={[styles.genderBtn, gender === g.id && styles.genderBtnActive]} onPress={() => setGender(g.id)} activeOpacity={0.7}>
+                  <Text style={[styles.genderText, gender === g.id && styles.genderTextActive]}>{g.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
 
           <View style={styles.field}>
@@ -194,6 +240,16 @@ export default function EditProfileScreen() {
                 </TouchableOpacity>
               ))}
             </View>
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Hobi (pisahkan dengan koma)</Text>
+            <TextInput style={styles.input} value={hobbies} onChangeText={setHobbies} placeholder="Membaca, Olahraga, Kaligrafi" placeholderTextColor={COLORS.textSecondary} />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Keahlian (pisahkan dengan koma)</Text>
+            <TextInput style={styles.input} value={skills} onChangeText={setSkills} placeholder="Tahfidz, Tajwid, Tilawah" placeholderTextColor={COLORS.textSecondary} />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -245,4 +301,9 @@ const styles = StyleSheet.create({
   interestChipActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryLight },
   interestText: { fontFamily: FONTS.medium, fontSize: 13, color: COLORS.text },
   interestTextActive: { color: COLORS.primary },
+  genderRow: { flexDirection: 'row', gap: 12 },
+  genderBtn: { flex: 1, paddingVertical: 12, borderRadius: RADIUS.md, borderWidth: 1.5, borderColor: COLORS.border, backgroundColor: COLORS.card, alignItems: 'center' },
+  genderBtnActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryLight },
+  genderText: { fontFamily: FONTS.medium, fontSize: 14, color: COLORS.text },
+  genderTextActive: { color: COLORS.primary, fontFamily: FONTS.semiBold },
 });

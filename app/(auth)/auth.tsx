@@ -1,20 +1,13 @@
 import { useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuth } from '@/src/context/AuthContext';
-import { CURRENT_USER, MOCK_TOKEN } from '@/src/utils/mock';
 import { COLORS, FONTS } from '@/src/constants/theme';
 
 export default function AuthCallback() {
   const router = useRouter();
-  const { login } = useAuth();
 
   useEffect(() => {
-    // Tanpa backend: langsung masuk dengan user dummy.
-    (async () => {
-      await login(MOCK_TOKEN, CURRENT_USER as any);
-      router.replace('/(tabs)/home');
-    })();
+    router.replace('/(tabs)/home');
   }, []);
 
   return (

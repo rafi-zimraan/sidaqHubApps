@@ -1,118 +1,78 @@
-# CLAUDE.md
+# CLAUDE.md — SidaqHub
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Aplikasi mobile jejaring sosial untuk komunitas Huffadz (penghafal Al-Quran) Indonesia.
+**Status: tanpa backend.** Seluruh data dari `src/utils/mock.ts`.
 
-## Tentang Aplikasi
-
-**SidaqHub** adalah aplikasi mobile jejaring sosial untuk komunitas Huffadz (penghafal Al-Quran) Indonesia. Fitur utama: feed postingan (ayat/teks/tilawah), halaqah online/offline, jejaring sesama penghafal, notifikasi, dan sistem badge Juz.
-
-**Status saat ini: tanpa backend.** Seluruh data bersumber dari `src/utils/mock.ts`. Semua layar sudah berfungsi penuh secara UI tanpa server.
-
-## Commands
-
+## Quick Commands
 ```bash
-# Jalankan dev server
-yarn start          # atau: npx expo start
-
-# Target platform tertentu
-yarn android        # buka di Android emulator/perangkat
-yarn ios            # buka di iOS Simulator
-yarn web            # buka di browser
-
-# Lint
-yarn lint           # expo lint (eslint-config-expo)
-
-# Build APK Android (via EAS)
-npx eas-cli build --platform android --profile preview   # APK internal
-npx eas-cli build --platform android --profile production
+yarn start             # Expo dev server
+yarn android           # Expo Go Android
+yarn lint              # expo lint
+yarn test              # Jest (116 tests)
+npx tsc --noEmit       # TypeScript check
+npx eas-cli build      # Production build
 ```
 
-> Gunakan **yarn**, bukan npm — project menggunakan `packageManager: yarn@1.22.22`.
+> Gunakan **yarn**, bukan npm. `packageManager: yarn@1.22.22`
 
-## Arsitektur
+## Arsitektur Ringkas
 
-### Routing (Expo Router v6 — file-based)
+- **Routing**: Expo Router v6 (file-based) — `app/` → `(auth)/`, `(tabs)/`, `post/[id]`, dll.
+- **Data Flow**: Screen → `apiGet/apiPost` → delay 250ms → `resolveGet/ResolveMutation` → Mock data
+- **Auth**: `AuthContext.tsx` — login/logout/updateUser + persist ke AsyncStorage
+- **Tema**: `src/constants/theme.ts` — COLORS, FONTS (Poppins + Amiri), SPACING, RADIUS
+- **Path Alias**: `@/` → root. Gunakan `@/src/...`, jangan relative path
+- **Storage**: `src/utils/storage/` — wrapper AsyncStorage + SecureStore (tidak pernah throw)
+- **Fonts**: `app/_layout.tsx` load Poppins + Amiri, swap setelah siap (tidak block render)
+- **Build**: EAS, `eas.json` (preview + production), `com.sidaqhub.app`, New Architecture aktif
 
-```
-app/
-├── index.tsx              # Gate: cek auth → redirect ke (auth) atau (tabs)
-├── _layout.tsx            # Root layout: load font, bungkus AuthProvider
-├── (auth)/                # Stack: login → register → onboarding
-│   ├── auth.tsx           # Handler auto-login (mock)
-│   ├── login.tsx
-│   ├── register.tsx
-│   └── onboarding.tsx     # 3-step onboarding setelah register
-├── (tabs)/                # Bottom tab navigator (5 tab)
-│   ├── home.tsx           # Feed utama + stories + FAB composer
-│   ├── network.tsx        # Koneksi & saran follow
-│   ├── community.tsx      # Komunitas & halaqah
-│   ├── notifications.tsx  # Notifikasi (hidden dari tab bar)
-│   └── profile.tsx        # Profil sendiri
-├── post/[id].tsx          # Detail postingan + komentar
-├── post/create.tsx        # Buat postingan (modal)
-├── halaqah/[id].tsx       # Detail halaqah
-├── halaqah/create.tsx     # Buat halaqah (modal)
-├── user/[id].tsx          # Profil pengguna lain
-└── edit-profile.tsx       # Edit profil (modal)
-```
+## Pipeline
 
-Alur auth: `index.tsx` membaca `useAuth()` → jika tidak ada user redirect ke `/(auth)/login`, jika `profile_completed === false` redirect ke `/(auth)/onboarding`, jika sudah masuk redirect ke `/(tabs)/home`.
+### 🆕 Fitur Baru
+1. **Planning** — baca `internal/docs/blueprint.md`, tulis spec
+2. **Design** — tentukan UI components, data flow, routing
+3. **Implementasi** — ikuti `internal/docs/coding-standard.md`
+4. **Testing** — unit test + component test + manual (`internal/docs/testing.md`)
+5. **Tuning** — jalankan `app/app-health.tsx`, perbaiki findings
+6. **Review** — pastikan semua quality gates lulus
 
-### Layer Data (Mock)
+### 🐛 Bug Fix
+1. **Reproduce** — identifikasi trigger & expected vs actual behavior
+2. **Diagnose** — cari root cause (error log, data flow tracing)
+3. **Fix** — implementasi solusi minimal, jangan ubah yang tidak relevan
+4. **Test** — `yarn test` + pastikan bug tidak muncul lagi
+5. **Verify** — manual test di device/simulator
 
-Karena belum ada backend, data mengalir seperti ini:
+### ⚡ Tuning / Optimasi
+1. **Health Check** — scan di `app/app-health.tsx` (atau `src/utils/appHealth.ts`)
+2. **Prioritize** — critical > warning > optimization
+3. **Optimize** — terapkan rekomendasi satu per satu
+4. **Benchmark** — ukur improvement (render time, bundle size, dsb.)
 
-```
-Screen → apiGet/apiPost/apiPut/apiDelete (src/utils/api.ts)
-           ↓ delay 250ms (agar loading state terlihat)
-        resolveGet / resolveMutation (src/utils/mock.ts)
-           ↓
-        Data dummy lokal (POSTS, USERS, HALAQAHS, dll.)
-```
+## Quality Gates (wajib lulus SEBELUM commit)
+- [ ] `npx tsc --noEmit` — nol type errors
+- [ ] `yarn lint` — nol lint errors
+- [ ] `yarn test` — semua test pass (116+ tests)
+- [ ] Manual QA — sesuai `internal/docs/quality-gates.md`
+- [ ] App Health — scan di `app/app-health.tsx`, skor ≥ 70
+- [ ] Error handling — semua async operation punya try-catch
+- [ ] TestID — setiap elemen interaktif punya `testID` (kecuali trivial)
 
-- **`src/utils/api.ts`** — hanya wrapper tipis dengan delay artifisial. Tanda tangan (`apiGet`, `apiPost`, `apiPut`, `apiDelete`) sengaja dibuat mirip REST client agar mudah diganti implementasi nyata nantinya.
-- **`src/utils/mock.ts`** — satu-satunya sumber kebenaran data. Edit di sini untuk mengubah tampilan tanpa menyentuh layar.
+## Konteks Kritis
+- `expo-modules-core@3.0.30` broken untuk Android native build — **gunakan Expo Go** (`yarn android`)
+- Apollo Client v4: `useMutation` dari `@apollo/client/react`, `onCompleted` data bertipe `unknown`
+- `expo-keep-awake@15.0.8` canary — Metro mock via `metro.config.js` + `mock.js`
+- Semua layar berfungsi penuh secara UI tanpa server; data mock di `src/utils/mock.ts`
+- Jangan commit tanpa diminta. Jangan buat file README/docs baru tanpa diminta.
 
-### Auth (Context)
-
-`src/context/AuthContext.tsx` — auto-login dengan `CURRENT_USER` dari `mock.ts`. Tidak ada persistensi ke storage; setiap reload app kembali ke user dummy. Ekspor: `AuthProvider`, `useAuth`, dan tipe `User`.
-
-### Tema & Konstanta
-
-`src/constants/theme.ts` — satu-satunya sumber untuk styling:
-- `COLORS` — palet warna (primary `#1A5C6B`, gold `#B8860B`, dll.)
-- `FONTS` — nama font Poppins (UI) dan Amiri (teks Arab)
-- `SPACING` / `RADIUS` — nilai spacing dan border radius
-- Helper functions: `getJuzBadge()`, `formatTime()`, `formatSchedule()`, `getRoleLabel()`
-
-### Path Alias
-
-`tsconfig.json` memetakan `@/*` → `./*` (root). Gunakan `@/src/` untuk mengimpor dari `src/`:
-
-```ts
-import { useAuth } from '@/src/context/AuthContext';
-import { COLORS, FONTS } from '@/src/constants/theme';
-import { apiGet } from '@/src/utils/api';
-```
-
-Jangan gunakan path relatif seperti `../../context/...` dari dalam `app/`.
-
-### Font
-
-Dua keluarga font dimuat di `app/_layout.tsx`:
-- **Poppins** (400/500/600/700) — untuk semua teks UI
-- **Amiri** (400) — untuk teks Arab (ayat Al-Quran)
-
-Splash screen tidak memblokir render — font di-swap setelah siap agar app tidak hang jika CDN Google Fonts lambat.
-
-### Storage Utility
-
-`src/utils/storage/` — wrapper AsyncStorage + SecureStore yang tidak pernah throw. Gunakan untuk persistensi data non-auth. Saat ini belum dipakai oleh layar mana pun (belum ada backend), tapi tersedia.
-
-### Build
-
-EAS Build dikonfigurasi di `eas.json`:
-- **`preview`** → APK Android untuk distribusi internal
-- **`production`** → APK Android dengan auto-increment versi
-- Application ID: `com.sidaqhub.app`
-- New Architecture (`newArchEnabled: true`) sudah aktif
+## Referensi Dokumen
+- **Blueprint**: `internal/docs/blueprint.md`
+- **PRD**: `internal/docs/prd.md`
+- **Workflow Detail**: `internal/docs/workflow.md`
+- **Quality Gates Detail**: `internal/docs/quality-gates.md`
+- **Coding Standard**: `internal/docs/coding-standard.md`
+- **Architecture**: `internal/docs/architecture.md`
+- **Database Schema**: `internal/docs/database.md`
+- **API Spec**: `internal/docs/api.md`
+- **Testing Detail**: `internal/docs/testing.md`
+- **App Health Utility**: `src/utils/appHealth.ts`

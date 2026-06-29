@@ -51,6 +51,7 @@ export function getJuzBadge(juzCount: number): { label: string; color: string; b
 export function formatTime(dateStr: string): string {
   try {
     const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '';
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const minutes = Math.floor(diff / 60000);
@@ -69,6 +70,7 @@ export function formatTime(dateStr: string): string {
 export function formatSchedule(dateStr: string | Date): string {
   try {
     const date = new Date(dateStr as string);
+    if (isNaN(date.getTime())) return 'Jadwal belum ditentukan';
     return date.toLocaleDateString('id-ID', {
       weekday: 'long', day: 'numeric', month: 'long',
       hour: '2-digit', minute: '2-digit',

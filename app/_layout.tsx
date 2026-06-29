@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
+import { ApolloProvider } from '@apollo/client/react';
 import {
   useFonts,
   Poppins_400Regular,
@@ -12,6 +13,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '@/src/context/AuthContext';
+import { apolloClient } from '@/src/graphql/client';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -25,7 +27,6 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    // Hide splash as soon as the JS layer is ready; don't block on font CDN
     SplashScreen.hideAsync().catch(() => {});
   }, []);
 
@@ -35,10 +36,8 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError]);
 
-  // IMPORTANT: do not block render on font loading. Fonts will swap in when ready.
-  // Previously returning null caused the app to hang if Google Fonts CDN was slow.
-
   return (
+    <ApolloProvider client={apolloClient}>
     <SafeAreaProvider>
     <AuthProvider>
       <StatusBar style="auto" />
@@ -55,5 +54,6 @@ export default function RootLayout() {
       </Stack>
     </AuthProvider>
     </SafeAreaProvider>
+    </ApolloProvider>
   );
 }

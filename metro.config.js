@@ -12,6 +12,20 @@ config.cacheStores = [
 ];
 
 
+// Mock expo-keep-awake (native module unavailable in dev)
+const keepAwakeMockPath = path.join(__dirname, 'node_modules', 'expo-keep-awake', 'mock.js');
+const origResolveRequest = config.resolver.resolveRequest;
+config.resolver.resolveRequest = (ctx, moduleName, platform) => {
+  if (moduleName === 'expo-keep-awake') {
+    return { type: 'sourceFile', filePath: keepAwakeMockPath };
+  }
+  if (moduleName.startsWith('expo-keep-awake/')) {
+    const subPath = moduleName.slice('expo-keep-awake/'.length);
+    return { type: 'sourceFile', filePath: path.join(__dirname, 'node_modules', 'expo-keep-awake', subPath) };
+  }
+  return origResolveRequest ? origResolveRequest(ctx, moduleName, platform) : ctx.resolveRequest(ctx, moduleName, platform);
+};
+
 // // Exclude unnecessary directories from file watching
 // config.watchFolders = [__dirname];
 // config.resolver.blacklistRE = /(.*)\/(__tests__|android|ios|build|dist|.git|node_modules\/.*\/android|node_modules\/.*\/ios|node_modules\/.*\/windows|node_modules\/.*\/macos)(\/.*)?$/;
