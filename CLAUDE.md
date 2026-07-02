@@ -23,7 +23,7 @@ npx eas-cli build      # Production build
 - **Tema**: `src/constants/theme.ts` — COLORS, FONTS (Poppins + Amiri), SPACING, RADIUS
 - **Path Alias**: `@/` → root. Gunakan `@/src/...`, jangan relative path
 - **Storage**: `src/utils/storage/` — wrapper AsyncStorage + SecureStore (tidak pernah throw)
-- **Fonts**: `app/_layout.tsx` load Poppins + Amiri, swap setelah siap (tidak block render)
+- **Fonts**: `app/_layout.tsx` load Poppins + Amiri — render ditahan sampai font siap (splash tetap tampil) agar teks tidak terpotong di Android
 - **Build**: EAS, `eas.json` (preview + production), `com.sidaqhub.app`, New Architecture aktif
 
 ## Pipeline

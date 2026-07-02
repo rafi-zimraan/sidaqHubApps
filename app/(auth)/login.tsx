@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Alert,
+  KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation } from '@apollo/client/react';
 import { useAuth } from '@/src/context/AuthContext';
+import { useAppAlert } from '@/src/components/AppAlert';
 import { LOGIN_MUTATION } from '@/src/graphql/mutations';
 import { COLORS, FONTS, SPACING, RADIUS } from '@/src/constants/theme';
 
@@ -21,6 +22,7 @@ export default function LoginScreen() {
   const [showPass, setShowPass] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const { login } = useAuth();
+  const { showAlert } = useAppAlert();
   const router = useRouter();
 
   const [doLogin, { loading }] = useMutation(LOGIN_MUTATION, {
@@ -31,13 +33,17 @@ export default function LoginScreen() {
     },
     onError: (err: any) => {
       const message = err.graphQLErrors?.[0]?.message || err.message || 'Gagal masuk';
-      Alert.alert('Login Gagal', message);
+      showAlert({ type: 'error', title: 'Login Gagal', message });
     },
   });
 
   const handleLogin = () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Perhatian', 'Email dan kata sandi harus diisi');
+      showAlert({
+        type: 'warning',
+        title: 'Perhatian',
+        message: 'Email dan kata sandi harus diisi terlebih dahulu, ya.',
+      });
       return;
     }
     const input: LoginInput = {
@@ -48,7 +54,11 @@ export default function LoginScreen() {
   };
 
   const comingSoon = () =>
-    Alert.alert('Segera Hadir', 'Fitur ini akan tersedia di update berikutnya, in syaa Allah 🌙');
+    showAlert({
+      type: 'info',
+      title: 'Segera Hadir',
+      message: 'Fitur ini akan tersedia di update berikutnya, in syaa Allah 🌙',
+    });
 
   return (
     <KeyboardAvoidingView
@@ -213,7 +223,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: COLORS.gold,
     alignItems: 'center', justifyContent: 'center',
   },
-  bismillah: { fontFamily: FONTS.arabic, fontSize: 22, color: COLORS.gold, marginBottom: 8, letterSpacing: 1 },
+  bismillah: { fontFamily: FONTS.arabic, fontSize: 22, lineHeight: 44, color: COLORS.gold, marginBottom: 8, letterSpacing: 1 },
   appName: { fontFamily: FONTS.bold, fontSize: 30, color: '#fff', letterSpacing: -0.5, marginBottom: 4 },
   subtitle: { fontFamily: FONTS.regular, fontSize: 14, color: 'rgba(255,255,255,0.85)' },
   form: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.xl },

@@ -96,6 +96,18 @@ export const POSTS: any[] = [
     ],
   },
   {
+    post_id: 'p6', type: 'image',
+    content: 'Suasana halaqah subuh tadi di masjid. Nikmatnya murajaah bersama. 🕌 #HalaqahSubuh',
+    image_url: 'https://picsum.photos/seed/sidaq-masjid/900/1100',
+    image_ratio: 0.9,
+    hashtags: ['HalaqahSubuh', 'Murajaah'],
+    created_at: minsAgo(75), reactions_count: 456, comments_count: 1, my_reaction: null,
+    user: USERS[3],
+    top_comments: [
+      { comment_id: 'c6', content: 'MasyaAllah adem banget lihatnya 🥹', created_at: minsAgo(60), user: { name: 'Fatimah Az-Zahra', role: 'santri' } },
+    ],
+  },
+  {
     post_id: 'p3', type: 'tilawah',
     content: 'Tilawah Surah Ar-Rahman pagi ini. Semoga menenangkan hati yang mendengar. 🎧',
     ayat_reference: 'Surah Ar-Rahman 1-13', audio_duration: '4:18',
@@ -109,6 +121,15 @@ export const POSTS: any[] = [
     created_at: minsAgo(180), reactions_count: 154, comments_count: 0, my_reaction: null,
     community: { name: 'Komunitas Huffadz Nusantara', members_count: 8420 },
     halaqah: { halaqah_id: 'h1', title: 'Murajaah Juz 1-5 Bersama', registered_count: 18, max_slots: 25 },
+  },
+  {
+    post_id: 'p7', type: 'image',
+    content: 'Mushaf baru untuk target hafalan tahun ini, bismillah khatam! 📖✨',
+    image_url: 'https://picsum.photos/seed/sidaq-mushaf/900/700',
+    image_ratio: 1.28,
+    hashtags: ['Tahfidz'],
+    created_at: minsAgo(220), reactions_count: 233, comments_count: 0, my_reaction: null,
+    user: USERS[1],
   },
   {
     post_id: 'p5', type: 'text',

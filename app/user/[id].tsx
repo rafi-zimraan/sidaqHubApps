@@ -131,6 +131,9 @@ export default function UserProfileScreen() {
                 onPress={() => router.push(`/post/${post.post_id}`)}
                 activeOpacity={0.8}
               >
+                {post.image_url ? (
+                  <Image source={{ uri: post.image_url }} style={styles.miniImage} resizeMode="cover" />
+                ) : null}
                 {post.type === 'ayat' && post.ayat_text ? (
                   <View style={styles.ayatBox}>
                     <Text style={styles.arabicText} numberOfLines={2}>{post.ayat_text}</Text>
@@ -176,7 +179,12 @@ const styles = StyleSheet.create({
   sectionTitle: { fontFamily: FONTS.bold, fontSize: 16, color: COLORS.text, marginBottom: SPACING.sm },
   emptyPosts: { alignItems: 'center', paddingVertical: SPACING.xl },
   emptyText: { fontFamily: FONTS.regular, fontSize: 14, color: COLORS.textSecondary },
-  miniPost: { backgroundColor: COLORS.card, borderRadius: RADIUS.lg, padding: SPACING.md, marginBottom: SPACING.sm, borderWidth: 1, borderColor: COLORS.border },
+  miniPost: {
+    backgroundColor: COLORS.card, borderRadius: 18, padding: SPACING.md, marginBottom: SPACING.sm,
+    shadowColor: '#1A2E35', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06, shadowRadius: 12, elevation: 2,
+  },
+  miniImage: { width: '100%', aspectRatio: 4 / 3, borderRadius: RADIUS.md, backgroundColor: '#EDEFF2', marginBottom: SPACING.sm },
   ayatBox: { backgroundColor: COLORS.quoteBox, borderLeftWidth: 3, borderLeftColor: COLORS.primary, borderRadius: RADIUS.sm, padding: SPACING.sm, marginBottom: SPACING.sm },
   arabicText: { fontFamily: FONTS.arabic, fontSize: 18, color: COLORS.text, textAlign: 'right', lineHeight: 36 },
   ayatRef: { fontFamily: FONTS.medium, fontSize: 11, color: COLORS.primary, marginTop: 4 },

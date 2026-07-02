@@ -3,9 +3,8 @@ import {
   View, Text, FlatList, StyleSheet, TouchableOpacity,
   RefreshControl, ActivityIndicator, SafeAreaView,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { apiGet, apiPut } from '@/src/utils/api';
-import { COLORS, FONTS, SPACING, RADIUS, formatTime } from '@/src/constants/theme';
+import { COLORS, FONTS, SPACING, formatTime } from '@/src/constants/theme';
 
 const NOTIF_ICON: Record<string, string> = {
   follow: '👤',
@@ -115,8 +114,9 @@ const styles = StyleSheet.create({
   notifCard: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.card,
     marginHorizontal: SPACING.md, marginTop: SPACING.sm,
-    borderRadius: RADIUS.lg, padding: SPACING.md,
-    borderWidth: 1, borderColor: COLORS.border, gap: SPACING.sm,
+    borderRadius: 18, padding: SPACING.md, gap: SPACING.sm,
+    shadowColor: '#1A2E35', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06, shadowRadius: 12, elevation: 2,
   },
   notifUnread: { borderLeftWidth: 3, borderLeftColor: COLORS.primary, backgroundColor: COLORS.quoteBox },
   notifIcon: {

@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View, Text, FlatList, StyleSheet, TouchableOpacity,
-  ScrollView, RefreshControl, ActivityIndicator, Animated,
+  ScrollView, RefreshControl, ActivityIndicator, Animated, Image,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/src/context/AuthContext';
 import { apiGet, apiPost, apiDelete } from '@/src/utils/api';
-import { COLORS, FONTS, SPACING, RADIUS, formatTime, formatSchedule } from '@/src/constants/theme';
+import { COLORS, FONTS, SPACING, formatTime } from '@/src/constants/theme';
 
 // ---------- HELPERS ----------
 function getInitials(name?: string): string {
@@ -232,6 +232,16 @@ function PostCard({ post, onReact, onPress }: any) {
         );
       })()}
 
+      {/* Foto (Pinterest/Unsplash style) */}
+      {post.image_url ? (
+        <Image
+          source={{ uri: post.image_url }}
+          style={[styles.postImage, { aspectRatio: post.image_ratio || 4 / 3 }]}
+          resizeMode="cover"
+          testID={`post-image-${post.post_id}`}
+        />
+      ) : null}
+
       {/* Ayat Box */}
       {post.type === 'ayat' && post.ayat_text && (
         <AyatBox
@@ -265,20 +275,21 @@ function PostCard({ post, onReact, onPress }: any) {
       <View style={styles.actionRow}>
         <TouchableOpacity
           testID={`react-btn-${post.post_id}`}
-          style={styles.actionBtn}
+          style={[styles.actionBtn, isReacted && styles.actionBtnActive]}
           onPress={() => onReact(post)}
           activeOpacity={0.7}
         >
+          <Text style={styles.actionEmoji}>🤲</Text>
           <Text style={[styles.actionText, styles.actionTextAamiin, isReacted && { fontFamily: FONTS.bold }]}>
             Aamiin
           </Text>
         </TouchableOpacity>
-        <View style={styles.actionDivider} />
         <TouchableOpacity style={styles.actionBtn} onPress={() => onPress(post.post_id)} activeOpacity={0.7}>
+          <Ionicons name="chatbubble-outline" size={15} color={COLORS.textSecondary} />
           <Text style={styles.actionText}>Komentar</Text>
         </TouchableOpacity>
-        <View style={styles.actionDivider} />
         <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
+          <Ionicons name="paper-plane-outline" size={15} color={COLORS.textSecondary} />
           <Text style={styles.actionText}>Bagikan</Text>
         </TouchableOpacity>
       </View>
@@ -305,14 +316,13 @@ function FilterTabs({ value, onChange }: any) {
         <TouchableOpacity
           key={f.id}
           testID={`filter-${f.id}`}
-          style={styles.filterTab}
+          style={[styles.filterChip, value === f.id && styles.filterChipActive]}
           onPress={() => onChange(value === f.id ? null : f.id)}
-          activeOpacity={0.7}
+          activeOpacity={0.8}
         >
-          <Text style={[styles.filterTabText, value === f.id && styles.filterTabTextActive]}>
+          <Text style={[styles.filterChipText, value === f.id && styles.filterChipTextActive]}>
             {f.label}
           </Text>
-          {value === f.id && <View style={styles.filterIndicator} />}
         </TouchableOpacity>
       ))}
     </View>
@@ -509,8 +519,8 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F4F5F7' },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F4F5F7' },
+  container: { flex: 1, backgroundColor: '#F6F7F9' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F6F7F9' },
 
   topBar: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
@@ -538,8 +548,13 @@ const styles = StyleSheet.create({
   },
 
   // Stories
-  storiesSection: { backgroundColor: '#fff' },
-  storiesList: { paddingHorizontal: SPACING.md, paddingVertical: 12, gap: 12 },
+  storiesSection: {
+    backgroundColor: '#fff',
+    marginHorizontal: 12, marginTop: 12, borderRadius: 20,
+    shadowColor: '#1A2E35', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06, shadowRadius: 12, elevation: 2,
+  },
+  storiesList: { paddingHorizontal: SPACING.md, paddingVertical: 14, gap: 12 },
   storyItem: { alignItems: 'center', width: 64 },
   storyKamuCircle: {
     width: 56, height: 56, borderRadius: 28,
@@ -560,8 +575,12 @@ const styles = StyleSheet.create({
   // Composer
   composer: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#fff', paddingHorizontal: SPACING.md, paddingVertical: 10,
-    gap: 10, borderTopWidth: 1, borderTopColor: '#F0F0F0',
+    backgroundColor: '#fff',
+    marginHorizontal: 12, marginTop: 12,
+    paddingHorizontal: SPACING.md, paddingVertical: 12,
+    gap: 10, borderRadius: 20,
+    shadowColor: '#1A2E35', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06, shadowRadius: 12, elevation: 2,
   },
   composerInput: {
     flex: 1, height: 40, justifyContent: 'center',
@@ -575,23 +594,33 @@ const styles = StyleSheet.create({
   },
   composerBtnText: { fontFamily: FONTS.semiBold, fontSize: 13, color: '#fff' },
 
-  // Filter
+  // Filter (chips ala Dribbble)
   filterTabs: {
-    flexDirection: 'row', backgroundColor: '#fff',
-    borderTopWidth: 1, borderTopColor: '#F0F0F0',
+    flexDirection: 'row', gap: 8,
+    paddingHorizontal: 12, paddingTop: 12, paddingBottom: 2,
   },
-  filterTab: { flex: 1, paddingVertical: 14, alignItems: 'center' },
-  filterTabText: { fontFamily: FONTS.medium, fontSize: 14, color: COLORS.text },
-  filterTabTextActive: { fontFamily: FONTS.bold, color: COLORS.primary },
-  filterIndicator: {
-    position: 'absolute', bottom: 0, height: 2.5, width: 32,
-    backgroundColor: COLORS.gold, borderRadius: 2,
+  filterChip: {
+    paddingHorizontal: 18, paddingVertical: 8,
+    borderRadius: 20, backgroundColor: '#fff',
+    shadowColor: '#1A2E35', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05, shadowRadius: 6, elevation: 1,
   },
+  filterChipActive: { backgroundColor: COLORS.primary },
+  filterChipText: { fontFamily: FONTS.medium, fontSize: 13, color: COLORS.textSecondary },
+  filterChipTextActive: { fontFamily: FONTS.semiBold, color: '#fff' },
 
-  // Post Card
+  // Post Card (floating, rounded)
   postCard: {
-    backgroundColor: '#fff', marginTop: 8,
+    backgroundColor: '#fff',
+    marginHorizontal: 12, marginTop: 12,
+    borderRadius: 20,
     paddingHorizontal: SPACING.md, paddingTop: SPACING.md, paddingBottom: 8,
+    shadowColor: '#1A2E35', shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.07, shadowRadius: 16, elevation: 3,
+  },
+  postImage: {
+    width: '100%', borderRadius: 16,
+    backgroundColor: '#EDEFF2', marginBottom: SPACING.sm,
   },
   postHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.sm, gap: 10 },
   postUserInfo: { flex: 1 },
@@ -680,11 +709,16 @@ const styles = StyleSheet.create({
 
   // Actions
   actionRow: {
-    flexDirection: 'row', alignItems: 'center',
-    borderTopWidth: 1, borderTopColor: '#F0F0F0', paddingTop: 4,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    borderTopWidth: 1, borderTopColor: '#F3F4F6', paddingTop: 8, paddingBottom: 2,
   },
-  actionBtn: { flex: 1, paddingVertical: 10, alignItems: 'center' },
-  actionDivider: { width: 1, height: 18, backgroundColor: '#F0F0F0' },
+  actionBtn: {
+    flex: 1, flexDirection: 'row', gap: 6,
+    paddingVertical: 8, alignItems: 'center', justifyContent: 'center',
+    borderRadius: 14,
+  },
+  actionBtnActive: { backgroundColor: COLORS.primaryLight },
+  actionEmoji: { fontSize: 14 },
   actionText: { fontFamily: FONTS.semiBold, fontSize: 13, color: COLORS.textSecondary },
   actionTextAamiin: { color: COLORS.primary },
 

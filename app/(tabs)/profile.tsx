@@ -323,8 +323,8 @@ export default function ProfileScreen() {
               <View style={styles.hafalanTop}>
                 <CircleProgress value={juzCount} size={72} />
                 <View style={styles.hafalanInfo}>
-                  <Text style={styles.hafalanName}>Khatam Al-Qur'an</Text>
-                  <Text style={styles.hafalanRiwayat}>Riwayat Hafs 'an 'Ashim</Text>
+                  <Text style={styles.hafalanName}>Khatam Al-Qur&apos;an</Text>
+                  <Text style={styles.hafalanRiwayat}>Riwayat Hafs &apos;an &apos;Ashim</Text>
                   <View style={styles.hafalanPill}>
                     <Text style={styles.hafalanPillText}>Murojaah Rutin · 7x/minggu</Text>
                   </View>

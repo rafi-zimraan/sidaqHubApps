@@ -126,9 +126,18 @@ export default function PostDetailScreen() {
               <View style={styles.ayatBox}>
                 <Text style={styles.arabicText}>{post.ayat_text}</Text>
                 {post.ayat_reference && <Text style={styles.ayatRef}>— {post.ayat_reference}</Text>}
-                {post.translation && <Text style={styles.ayatTranslation}>"{post.translation}"</Text>}
+                {post.translation && <Text style={styles.ayatTranslation}>&ldquo;{post.translation}&rdquo;</Text>}
               </View>
             )}
+
+            {post.image_url ? (
+              <Image
+                source={{ uri: post.image_url }}
+                style={[styles.postImage, { aspectRatio: post.image_ratio || 4 / 3 }]}
+                resizeMode="cover"
+                testID="post-detail-image"
+              />
+            ) : null}
 
             {post.content ? <Text style={styles.postContent}>{post.content}</Text> : null}
 
@@ -224,6 +233,7 @@ const styles = StyleSheet.create({
   arabicText: { fontFamily: FONTS.arabic, fontSize: 24, color: COLORS.text, textAlign: 'right', lineHeight: 48, marginBottom: 8 },
   ayatRef: { fontFamily: FONTS.semiBold, fontSize: 13, color: COLORS.primary, marginBottom: 6 },
   ayatTranslation: { fontFamily: FONTS.regular, fontSize: 14, color: COLORS.text, fontStyle: 'italic', lineHeight: 22 },
+  postImage: { width: '100%', borderRadius: RADIUS.lg, backgroundColor: '#EDEFF2', marginBottom: SPACING.sm },
   postContent: { fontFamily: FONTS.regular, fontSize: 15, color: COLORS.text, lineHeight: 24, marginBottom: SPACING.sm },
   hashtagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginBottom: SPACING.sm },
   hashtag: { fontFamily: FONTS.medium, fontSize: 13, color: COLORS.primary },
