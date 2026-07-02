@@ -125,4 +125,45 @@ describe('LoginScreen', () => {
 
     expect(mockLogin).toHaveBeenCalledTimes(1);
   });
+
+  it('shows custom alert when submitting with empty fields', () => {
+    const { AlertProvider } = require('@/src/components/AppAlert');
+    const { getByTestId, queryByTestId } = render(
+      <AlertProvider>
+        <LoginScreen />
+      </AlertProvider>
+    );
+    expect(queryByTestId('app-alert')).toBeNull();
+
+    fireEvent.press(getByTestId('login-submit-button'));
+
+    expect(getByTestId('app-alert')).toBeTruthy();
+    expect(getByTestId('app-alert-title').props.children).toBe('Perhatian');
+    expect(mockLogin).not.toHaveBeenCalled();
+  });
+
+  it('closes the custom alert with Mengerti button', () => {
+    const { AlertProvider } = require('@/src/components/AppAlert');
+    const { getByTestId, queryByTestId } = render(
+      <AlertProvider>
+        <LoginScreen />
+      </AlertProvider>
+    );
+    fireEvent.press(getByTestId('login-submit-button'));
+    expect(getByTestId('app-alert')).toBeTruthy();
+
+    fireEvent.press(getByTestId('app-alert-btn-0'));
+    expect(queryByTestId('app-alert')).toBeNull();
+  });
+
+  it('shows Segera Hadir custom alert for forgot password', () => {
+    const { AlertProvider } = require('@/src/components/AppAlert');
+    const { getByTestId } = render(
+      <AlertProvider>
+        <LoginScreen />
+      </AlertProvider>
+    );
+    fireEvent.press(getByTestId('forgot-password-link'));
+    expect(getByTestId('app-alert-title').props.children).toBe('Segera Hadir');
+  });
 });

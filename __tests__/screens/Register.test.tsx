@@ -25,6 +25,10 @@ jest.mock('@apollo/client', () => ({
   gql: jest.fn(() => 'mocked_gql'),
 }));
 
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 44, bottom: 0, left: 0, right: 0 }),
+}));
+
 jest.mock('expo-font', () => ({ useFonts: () => [true, false], loadAsync: jest.fn() }));
 jest.mock('expo-asset', () => ({ Asset: { fromURI: jest.fn() } }));
 jest.mock('@expo/vector-icons', () => {
