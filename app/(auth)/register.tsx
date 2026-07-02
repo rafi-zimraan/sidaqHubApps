@@ -3,6 +3,7 @@ import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Alert, Image,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -10,6 +11,7 @@ import { useMutation } from '@apollo/client/react';
 import { useAuth } from '@/src/context/AuthContext';
 import { REGISTER_MUTATION } from '@/src/graphql/mutations';
 import { COLORS, FONTS, SPACING, RADIUS } from '@/src/constants/theme';
+import { REGISTER as REGISTER_TEST_ID } from '@/src/constants/testIds/auth';
 
 const ROLES = [
   { id: 'santri', label: 'Santri Huffadz', desc: 'Aktif menghafal Al-Quran' },
@@ -51,6 +53,7 @@ export default function RegisterScreen() {
   const [step, setStep] = useState(0);
   const { login } = useAuth();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -81,7 +84,7 @@ export default function RegisterScreen() {
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.5,
@@ -160,23 +163,23 @@ export default function RegisterScreen() {
 
       <View style={styles.field}>
         <Text style={styles.label}>Nama Lengkap</Text>
-        <TextInput style={styles.input} placeholder="Cth: Ahmad Fauzi" placeholderTextColor="#C5C5C5" value={name} onChangeText={setName} autoCapitalize="words" />
+        <TextInput testID={REGISTER_TEST_ID.nameInput} style={styles.input} placeholder="Cth: Ahmad Fauzi" placeholderTextColor="#C5C5C5" value={name} onChangeText={setName} autoCapitalize="words" textContentType="name" returnKeyType="next" />
       </View>
 
       <View style={styles.field}>
         <Text style={styles.label}>Username</Text>
-        <TextInput style={styles.input} placeholder="Cth: ahmad_fauzi" placeholderTextColor="#C5C5C5" value={username} onChangeText={setUsername} autoCapitalize="none" />
+        <TextInput testID={REGISTER_TEST_ID.usernameInput} style={styles.input} placeholder="Cth: ahmad_fauzi" placeholderTextColor="#C5C5C5" value={username} onChangeText={setUsername} autoCapitalize="none" returnKeyType="next" />
       </View>
 
       <View style={styles.field}>
         <Text style={styles.label}>Email</Text>
-        <TextInput style={styles.input} placeholder="email@kamu.com" placeholderTextColor="#C5C5C5" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+        <TextInput testID={REGISTER_TEST_ID.emailInput} style={styles.input} placeholder="email@kamu.com" placeholderTextColor="#C5C5C5" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" textContentType="emailAddress" autoComplete="email" returnKeyType="next" />
       </View>
 
       <View style={styles.field}>
         <Text style={styles.label}>Kata Sandi</Text>
         <View style={styles.passwordRow}>
-          <TextInput style={[styles.input, { paddingRight: 44 }]} placeholder="Min. 8 karakter" placeholderTextColor="#C5C5C5" value={password} onChangeText={setPassword} secureTextEntry={!showPass} />
+          <TextInput testID={REGISTER_TEST_ID.passwordInput} style={[styles.input, { paddingRight: 44 }]} placeholder="Min. 8 karakter" placeholderTextColor="#C5C5C5" value={password} onChangeText={setPassword} secureTextEntry={!showPass} textContentType="newPassword" autoComplete="password-new" returnKeyType="next" />
           <TouchableOpacity onPress={() => setShowPass(!showPass)} style={styles.eyeBtn}>
             <Ionicons name={showPass ? 'eye-off-outline' : 'eye-outline'} size={20} color={COLORS.textSecondary} />
           </TouchableOpacity>
@@ -186,7 +189,7 @@ export default function RegisterScreen() {
       <View style={styles.field}>
         <Text style={styles.label}>Konfirmasi Kata Sandi</Text>
         <View style={styles.passwordRow}>
-          <TextInput style={[styles.input, { paddingRight: 44 }, confirmPass && password !== confirmPass && styles.inputError]} placeholder="Ulangi kata sandi" placeholderTextColor="#C5C5C5" value={confirmPass} onChangeText={setConfirmPass} secureTextEntry={!showConfirm} />
+          <TextInput testID={REGISTER_TEST_ID.passwordConfirmInput} style={[styles.input, { paddingRight: 44 }, confirmPass && password !== confirmPass && styles.inputError]} placeholder="Ulangi kata sandi" placeholderTextColor="#C5C5C5" value={confirmPass} onChangeText={setConfirmPass} secureTextEntry={!showConfirm} textContentType="newPassword" autoComplete="password-new" returnKeyType="done" />
           <TouchableOpacity onPress={() => setShowConfirm(!showConfirm)} style={styles.eyeBtn}>
             <Ionicons name={showConfirm ? 'eye-off-outline' : 'eye-outline'} size={20} color={COLORS.textSecondary} />
           </TouchableOpacity>
@@ -201,7 +204,7 @@ export default function RegisterScreen() {
 
       {/* Photo */}
       <View style={styles.photoSection}>
-        <TouchableOpacity onPress={pickImage} activeOpacity={0.8}>
+        <TouchableOpacity testID={REGISTER_TEST_ID.photoPicker} onPress={pickImage} activeOpacity={0.8}>
           {photoUri ? (
             <Image source={{ uri: photoUri }} style={styles.photoPreview} />
           ) : (
@@ -217,20 +220,20 @@ export default function RegisterScreen() {
       </View>
 
       <View style={styles.field}>
-        <Text style={styles.label}>No. Telepon</Text>
-        <TextInput style={styles.input} placeholder="Cth: 08123456789" placeholderTextColor="#C5C5C5" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+        <Text style={styles.label}>No. Telepon <Text style={styles.optionalHint}>(opsional)</Text></Text>
+        <TextInput testID={REGISTER_TEST_ID.phoneInput} style={styles.input} placeholder="Cth: 08123456789" placeholderTextColor="#C5C5C5" value={phone} onChangeText={setPhone} keyboardType="phone-pad" textContentType="telephoneNumber" autoComplete="tel" returnKeyType="next" />
       </View>
 
       <View style={styles.field}>
-        <Text style={styles.label}>Tanggal Lahir</Text>
-        <TextInput style={styles.input} placeholder="YYYY-MM-DD (Cth: 2000-01-15)" placeholderTextColor="#C5C5C5" value={birthday} onChangeText={setBirthday} autoCapitalize="none" />
+        <Text style={styles.label}>Tanggal Lahir <Text style={styles.optionalHint}>(opsional)</Text></Text>
+        <TextInput testID={REGISTER_TEST_ID.birthdayInput} style={styles.input} placeholder="YYYY-MM-DD (Cth: 2000-01-15)" placeholderTextColor="#C5C5C5" value={birthday} onChangeText={setBirthday} autoCapitalize="none" returnKeyType="next" />
       </View>
 
       <View style={styles.field}>
-        <Text style={styles.label}>Jenis Kelamin</Text>
+        <Text style={styles.label}>Jenis Kelamin <Text style={styles.optionalHint}>(opsional)</Text></Text>
         <View style={styles.optionRow}>
           {GENDERS.map((g) => (
-            <TouchableOpacity key={g.id} style={[styles.optionChip, gender === g.id && styles.optionChipActive]} onPress={() => setGender(g.id)} activeOpacity={0.75}>
+            <TouchableOpacity key={g.id} testID={`register-gender-${g.id}`} style={[styles.optionChip, gender === g.id && styles.optionChipActive]} onPress={() => setGender(g.id)} activeOpacity={0.75}>
               <Text style={[styles.optionText, gender === g.id && styles.optionTextActive]}>{g.label}</Text>
             </TouchableOpacity>
           ))}
@@ -240,7 +243,7 @@ export default function RegisterScreen() {
       <View style={styles.field}>
         <Text style={styles.label}>Peran</Text>
         {ROLES.map((r) => (
-          <TouchableOpacity key={r.id} style={[styles.roleCard, role === r.id && styles.roleCardActive]} onPress={() => setRole(r.id)} activeOpacity={0.8}>
+          <TouchableOpacity key={r.id} testID={`register-role-${r.id}`} style={[styles.roleCard, role === r.id && styles.roleCardActive]} onPress={() => setRole(r.id)} activeOpacity={0.8}>
             <Text style={styles.roleIcon}>{r.id === 'santri' ? '📚' : r.id === 'ustadz' ? '🎓' : '🌟'}</Text>
             <View style={{ flex: 1 }}>
               <Text style={[styles.roleLabel, role === r.id && styles.roleLabelActive]}>{r.label}</Text>
@@ -252,13 +255,13 @@ export default function RegisterScreen() {
       </View>
 
       <View style={styles.field}>
-        <Text style={styles.label}>Provinsi</Text>
-        <TextInput style={styles.input} placeholder="Cth: Jawa Barat" placeholderTextColor="#C5C5C5" value={province} onChangeText={setProvince} autoCapitalize="words" />
+        <Text style={styles.label}>Provinsi <Text style={styles.optionalHint}>(opsional)</Text></Text>
+        <TextInput testID={REGISTER_TEST_ID.provinceInput} style={styles.input} placeholder="Cth: Jawa Barat" placeholderTextColor="#C5C5C5" value={province} onChangeText={setProvince} autoCapitalize="words" returnKeyType="next" />
       </View>
 
       <View style={styles.field}>
-        <Text style={styles.label}>Kota / Kabupaten</Text>
-        <TextInput style={styles.input} placeholder="Cth: Bandung, Depok..." placeholderTextColor="#C5C5C5" value={city} onChangeText={setCity} autoCapitalize="words" />
+        <Text style={styles.label}>Kota / Kabupaten <Text style={styles.optionalHint}>(opsional)</Text></Text>
+        <TextInput testID={REGISTER_TEST_ID.cityInput} style={styles.input} placeholder="Cth: Bandung, Depok..." placeholderTextColor="#C5C5C5" value={city} onChangeText={setCity} autoCapitalize="words" returnKeyType="done" />
       </View>
     </View>,
 
@@ -270,7 +273,7 @@ export default function RegisterScreen() {
         <Text style={styles.label}>Juz yang Sudah Dihafal</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.juzRow}>
           {JUZ_OPTIONS.map((j) => (
-            <TouchableOpacity key={j} style={[styles.juzBtn, juzCount === j && styles.juzBtnActive]} onPress={() => setJuzCount(j)} activeOpacity={0.7}>
+            <TouchableOpacity key={j} testID={`register-juz-${j}`} style={[styles.juzBtn, juzCount === j && styles.juzBtnActive]} onPress={() => setJuzCount(j)} activeOpacity={0.7}>
               <Text style={[styles.juzBtnText, juzCount === j && styles.juzBtnTextActive]}>{j}</Text>
               <Text style={styles.juzBtnSub}>{j === 30 ? 'Khatam' : 'Juz'}</Text>
             </TouchableOpacity>
@@ -279,15 +282,15 @@ export default function RegisterScreen() {
       </View>
 
       <View style={styles.field}>
-        <Text style={styles.label}>Bio / Tentang Kamu</Text>
-        <TextInput style={[styles.input, styles.textArea]} placeholder="Ceritakan tentang perjalanan hafalanmu..." placeholderTextColor="#C5C5C5" value={bio} onChangeText={setBio} multiline />
+        <Text style={styles.label}>Bio / Tentang Kamu <Text style={styles.optionalHint}>(opsional)</Text></Text>
+        <TextInput testID={REGISTER_TEST_ID.bioInput} style={[styles.input, styles.textArea]} placeholder="Ceritakan tentang perjalanan hafalanmu..." placeholderTextColor="#C5C5C5" value={bio} onChangeText={setBio} multiline />
       </View>
 
       <View style={styles.field}>
-        <Text style={styles.label}>Minat</Text>
+        <Text style={styles.label}>Minat <Text style={styles.optionalHint}>(opsional)</Text></Text>
         <View style={styles.chipGrid}>
           {INTERESTS.map((item) => (
-            <TouchableOpacity key={item} style={[styles.chip, interests.includes(item) && styles.chipActive]} onPress={() => toggleInterest(item)} activeOpacity={0.7}>
+            <TouchableOpacity key={item} testID={`register-interest-${item}`} style={[styles.chip, interests.includes(item) && styles.chipActive]} onPress={() => toggleInterest(item)} activeOpacity={0.7}>
               <Text style={[styles.chipText, interests.includes(item) && styles.chipTextActive]}>{item}</Text>
             </TouchableOpacity>
           ))}
@@ -295,21 +298,21 @@ export default function RegisterScreen() {
       </View>
 
       <View style={styles.field}>
-        <Text style={styles.label}>Hobi (pisahkan dengan koma)</Text>
-        <TextInput style={styles.input} placeholder="Cth: Membaca, Olahraga, Kaligrafi" placeholderTextColor="#C5C5C5" value={hobbies} onChangeText={setHobbies} autoCapitalize="words" />
+        <Text style={styles.label}>Hobi (pisahkan dengan koma) <Text style={styles.optionalHint}>(opsional)</Text></Text>
+        <TextInput testID={REGISTER_TEST_ID.hobbiesInput} style={styles.input} placeholder="Cth: Membaca, Olahraga, Kaligrafi" placeholderTextColor="#C5C5C5" value={hobbies} onChangeText={setHobbies} autoCapitalize="words" returnKeyType="next" />
       </View>
 
       <View style={styles.field}>
-        <Text style={styles.label}>Keahlian (pisahkan dengan koma)</Text>
-        <TextInput style={styles.input} placeholder="Cth: Tahfidz, Tajwid, Tilawah" placeholderTextColor="#C5C5C5" value={skills} onChangeText={setSkills} autoCapitalize="words" />
+        <Text style={styles.label}>Keahlian (pisahkan dengan koma) <Text style={styles.optionalHint}>(opsional)</Text></Text>
+        <TextInput testID={REGISTER_TEST_ID.skillsInput} style={styles.input} placeholder="Cth: Tahfidz, Tajwid, Tilawah" placeholderTextColor="#C5C5C5" value={skills} onChangeText={setSkills} autoCapitalize="words" returnKeyType="done" />
       </View>
     </View>,
   ];
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={step > 0 ? () => setStep(step - 1) : () => router.back()}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+        <TouchableOpacity testID={REGISTER_TEST_ID.backButton} style={styles.backBtn} onPress={step > 0 ? () => setStep(step - 1) : () => router.back()}>
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
         <View style={styles.progressRow}>
@@ -325,6 +328,7 @@ export default function RegisterScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity
+          testID={REGISTER_TEST_ID.submitButton}
           style={[styles.submitBtn, (!canNext() || (step === 2 && loading)) && styles.btnDisabled]}
           onPress={step < 2 ? () => setStep(step + 1) : handleRegister}
           disabled={(step < 2 && !canNext()) || (step === 2 && loading)}
@@ -344,7 +348,7 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   header: {
-    backgroundColor: COLORS.primary, paddingTop: 56, paddingBottom: 16,
+    backgroundColor: COLORS.primary, paddingBottom: 16,
     paddingHorizontal: SPACING.md, flexDirection: 'row', alignItems: 'center',
   },
   backBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
@@ -357,6 +361,7 @@ const styles = StyleSheet.create({
   stepSub: { fontFamily: FONTS.regular, fontSize: 13, color: COLORS.textSecondary, marginBottom: SPACING.lg },
   field: { marginBottom: SPACING.md },
   label: { fontFamily: FONTS.semiBold, fontSize: 13, color: COLORS.text, marginBottom: 8 },
+  optionalHint: { fontFamily: FONTS.regular, fontSize: 12, color: COLORS.textSecondary },
   input: { backgroundColor: '#FAFAFA', borderWidth: 1, borderColor: '#EEEEEE', borderRadius: RADIUS.md, paddingHorizontal: SPACING.md, height: 50, fontFamily: FONTS.regular, fontSize: 14, color: COLORS.text },
   inputError: { borderColor: COLORS.error },
   textArea: { height: 90, textAlignVertical: 'top', paddingTop: SPACING.sm },

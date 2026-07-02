@@ -62,7 +62,8 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (userData: User | RawUser, userToken: string) => Promise<void>;
+  /** `options.persist` (default true) — false pindah token/user ke memori saja, tidak ditulis ke AsyncStorage (mode "jangan ingat saya"). */
+  login: (userData: User | RawUser, userToken: string, options?: { persist?: boolean }) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (updates: Partial<User>) => void;
   isAuthenticated: boolean;
@@ -94,6 +95,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [persistSession, setPersistSession] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -117,23 +119,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (token) {
+    if (token && persistSession) {
       AsyncStorage.setItem(TOKEN_KEY, token);
-    } else {
+    } else if (!token) {
       AsyncStorage.removeItem(TOKEN_KEY);
     }
-  }, [token]);
+  }, [token, persistSession]);
 
   useEffect(() => {
-    if (user) {
+    if (user && persistSession) {
       AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
-    } else {
+    } else if (!user) {
       AsyncStorage.removeItem(USER_KEY);
     }
-  }, [user]);
+  }, [user, persistSession]);
 
-  const login = useCallback(async (userData: User | RawUser, userToken: string) => {
+  const login = useCallback(async (userData: User | RawUser, userToken: string, options?: { persist?: boolean }) => {
     const normalized = 'user_id' in userData ? userData as User : normalizeUser(userData as RawUser);
+    setPersistSession(options?.persist !== false);
     setUser(normalized);
     setToken(userToken);
   }, []);
@@ -141,6 +144,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = useCallback(async () => {
     setUser(null);
     setToken(null);
+    setPersistSession(true);
     await AsyncStorage.multiRemove([TOKEN_KEY, USER_KEY]);
   }, []);
 

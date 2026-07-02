@@ -25,10 +25,20 @@ export const LOGIN = {
 };
 
 export const REGISTER = {
+	backButton: 'register-back-button',
+	photoPicker: 'register-photo-picker',
 	nameInput: 'register-name-input',
+	usernameInput: 'register-username-input',
 	emailInput: 'register-email-input',
 	passwordInput: 'register-password-input',
 	passwordConfirmInput: 'register-password-confirm-input',
+	phoneInput: 'register-phone-input',
+	birthdayInput: 'register-birthday-input',
+	provinceInput: 'register-province-input',
+	cityInput: 'register-city-input',
+	bioInput: 'register-bio-input',
+	hobbiesInput: 'register-hobbies-input',
+	skillsInput: 'register-skills-input',
 	submitButton: 'register-submit-button',
 	loginLink: 'register-login-link',
 };

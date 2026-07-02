@@ -1,6 +1,7 @@
 import { ApolloClient, InMemoryCache, createHttpLink, from } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { GRAPHQL_URL } from './config';
+import { mockAuthLink } from './mockAuthLink';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const httpLink = createHttpLink({ uri: GRAPHQL_URL });
@@ -16,7 +17,7 @@ const authLink = setContext(async (_, { headers }) => {
 });
 
 export const apolloClient = new ApolloClient({
-  link: from([authLink, httpLink]),
+  link: from([authLink, mockAuthLink, httpLink]),
   cache: new InMemoryCache(),
   defaultOptions: {
     watchQuery: { fetchPolicy: 'network-only' },
